@@ -1,4 +1,5 @@
 #include <ATen/ATen.h>
+#include <ATen/cuda/CUDAContext.h>
 #include <THC/THCAtomics.cuh>
 
 #define CUDA_1D_KERNEL_LOOP(i, n)                            \
@@ -158,7 +159,7 @@ int ROIAlignRotatedForwardLaucher(const at::Tensor features, const at::Tensor ro
                     sample_num, channels, height, width, pooled_height,
                     pooled_width, top_data);
         }));
-    THCudaCheck(cudaGetLastError());
+    AT_CUDA_CHECK(cudaGetLastError());
     return 1;
 }
 
@@ -337,7 +338,7 @@ int ROIAlignRotatedBackwardLaucher(const at::Tensor top_grad, const at::Tensor r
                       channels, height, width, pooled_height, pooled_width,
                       bottom_diff);
             }));
-        THCudaCheck(cudaGetLastError());
+        AT_CUDA_CHECK(cudaGetLastError());
         return 1;
 
     }

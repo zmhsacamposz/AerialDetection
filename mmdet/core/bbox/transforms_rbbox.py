@@ -811,7 +811,7 @@ def polygonToRotRectangle_batch(bbox, with_module=True):
         angle = angle[:, np.newaxis] % ( 2 * np.pi)
     else:
         angle = angle[:, np.newaxis]
-    dboxes = np.concatenate((center[:, 0].astype(np.float), center[:, 1].astype(np.float), w, h, angle), axis=1)
+    dboxes = np.concatenate((center[:, 0].astype(np.float64), center[:, 1].astype(np.float64), w, h, angle), axis=1)
     return dboxes
 
 def RotBox2Polys(dboxes):

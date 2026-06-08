@@ -1,5 +1,6 @@
 // adapted from "psroi_rotated_align_ave" in RoITransformer "https://github.com/dingjiansw101/RoITransformer_DOTA/blob/master/fpn/operator_cxx/psroi_rotated_align_ave.cu"
 #include <ATen/ATen.h>
+#include <ATen/cuda/CUDAContext.h>
 #include <THC/THCAtomics.cuh>
 
 #define CUDA_1D_KERNEL_LOOP(i, n)                            \
@@ -196,7 +197,7 @@ int PSROIAlignRotatedForwardLaucher(const at::Tensor features, const at::Tensor 
                 sample_num, channels, height, width, pooled_height,
                 pooled_width, output_dim, group_size, top_data);
     }));
-    THCudaCheck(cudaGetLastError());
+    AT_CUDA_CHECK(cudaGetLastError());
     return 1;
 }
 
@@ -429,6 +430,6 @@ int PSROIAlignRotatedBackwardLaucher(const at::Tensor top_grad, const at::Tensor
                         output_dim, group_size,
                         bottom_diff);
             }));
-        THCudaCheck(cudaGetLastError());
+        AT_CUDA_CHECK(cudaGetLastError());
         return 1;
     }

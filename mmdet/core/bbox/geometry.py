@@ -7,15 +7,15 @@ from mmdet.core.bbox.transforms_rbbox import RotBox2Polys, poly2bbox, mask2poly,
 
 def bbox_overlaps_cy(boxes, query_boxes):
     box_device = boxes.device
-    boxes_np = boxes.cpu().numpy().astype(np.float)
-    query_boxes_np = query_boxes.cpu().numpy().astype(np.float)
+    boxes_np = boxes.cpu().numpy().astype(np.float64)
+    query_boxes_np = query_boxes.cpu().numpy().astype(np.float64)
     ious = bbox_overlaps_cython(boxes_np, query_boxes_np)
     return torch.from_numpy(ious).to(box_device)
 
 # def bbox_overlaps_cy2(boxes, query_boxes):
 #     box_device = boxes.device
-#     boxes_np = boxes.cpu().numpy().astype(np.float)
-#     query_boxes_np = query_boxes.cpu().numpy().astype(np.float)
+#     boxes_np = boxes.cpu().numpy().astype(np.float64)
+#     query_boxes_np = query_boxes.cpu().numpy().astype(np.float64)
 #     ious = bbox_overlaps_cython_v2(boxes_np, query_boxes_np)
 #     return torch.from_numpy(ious).to(box_device)
 
@@ -27,12 +27,12 @@ def bbox_overlaps_np(boxes, query_boxes):
     :return: overlaps: n * k overlaps
     """
     box_device = boxes.device
-    boxes = boxes.cpu().numpy().astype(np.float)
-    query_boxes = query_boxes.cpu().numpy().astype(np.float)
+    boxes = boxes.cpu().numpy().astype(np.float64)
+    query_boxes = query_boxes.cpu().numpy().astype(np.float64)
 
     n_ = boxes.shape[0]
     k_ = query_boxes.shape[0]
-    overlaps = np.zeros((n_, k_), dtype=np.float)
+    overlaps = np.zeros((n_, k_), dtype=np.float64)
     for k in range(k_):
         query_box_area = (query_boxes[k, 2] - query_boxes[k, 0] + 1) * (query_boxes[k, 3] - query_boxes[k, 1] + 1)
         for n in range(n_):
@@ -187,8 +187,8 @@ def bbox_overlaps_np_v3(bboxes1, bboxes2, mode='iou', is_aligned=False):
     assert mode in ['iou', 'iof']
 
     box_device = bboxes1.device
-    bboxes1 = bboxes1.cpu().numpy().astype(np.float)
-    bboxes2 = bboxes2.cpu().numpy().astype(np.float)
+    bboxes1 = bboxes1.cpu().numpy().astype(np.float64)
+    bboxes2 = bboxes2.cpu().numpy().astype(np.float64)
 
     rows = bboxes1.shape[0]
     cols = bboxes2.shape[0]
@@ -310,8 +310,8 @@ def mask_overlaps():
 
 # def bbox_overlaps_cy(boxes, query_boxes):
 #     box_device = boxes.device
-#     boxes_np = boxes.cpu().numpy().astype(np.float)
-#     query_boxes_np = query_boxes.cpu().numpy().astype(np.float)
+#     boxes_np = boxes.cpu().numpy().astype(np.float64)
+#     query_boxes_np = query_boxes.cpu().numpy().astype(np.float64)
 #     ious = bbox_overlaps_cython(boxes_np, query_boxes_np)
 #     return torch.from_numpy(ious).to(box_device)
 
@@ -320,14 +320,14 @@ def rbbox_overlaps_cy_warp(rbboxes, query_boxes):
     # import pdb
     # pdb.set_trace()
     box_device = query_boxes.device
-    query_boxes_np = query_boxes.cpu().numpy().astype(np.float)
+    query_boxes_np = query_boxes.cpu().numpy().astype(np.float64)
 
     # polys_np = RotBox2Polys(boxes_np)
     # TODO: change it to only use pos gt_masks
     # polys_np = mask2poly(gt_masks)
-    # polys_np = np.array(Tuplelist2Polylist(polys_np)).astype(np.float)
+    # polys_np = np.array(Tuplelist2Polylist(polys_np)).astype(np.float64)
 
-    polys_np = RotBox2Polys(rbboxes).astype(np.float)
+    polys_np = RotBox2Polys(rbboxes).astype(np.float64)
     query_polys_np = RotBox2Polys(query_boxes_np)
 
     h_bboxes_np = poly2bbox(polys_np)
@@ -361,11 +361,11 @@ def rbbox_overlaps_hybrid(boxes, query_boxes):
 def rbbox_overlaps_cy(boxes_np, query_boxes_np):
     # TODO: first calculate the hbb overlaps, for overlaps > 0, calculate the obb overlaps
 
-    polys_np = RotBox2Polys(boxes_np).astype(np.float)
-    query_polys_np = RotBox2Polys(query_boxes_np).astype(np.float)
+    polys_np = RotBox2Polys(boxes_np).astype(np.float64)
+    query_polys_np = RotBox2Polys(query_boxes_np).astype(np.float64)
 
-    h_bboxes_np = poly2bbox(polys_np).astype(np.float)
-    h_query_bboxes_np = poly2bbox(query_polys_np).astype(np.float)
+    h_bboxes_np = poly2bbox(polys_np).astype(np.float64)
+    h_query_bboxes_np = poly2bbox(query_polys_np).astype(np.float64)
 
     # hious
     ious = bbox_overlaps_cython(h_bboxes_np, h_query_bboxes_np)

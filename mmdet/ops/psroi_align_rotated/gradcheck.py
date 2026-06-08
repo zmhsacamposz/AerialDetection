@@ -50,8 +50,8 @@ class test_op_roi_align_rotated(unittest.TestCase):
                 for image_height, image_width in itertools.product([168, 224], [168, 224]):
                     for grad_notes in [['im_data']]:
                         spatial_scale = 0.0625
-                        feat_height = np.int(image_height * spatial_scale)
-                        feat_width = np.int(image_width * spatial_scale)
+                        feat_height = np.int64(image_height * spatial_scale)
+                        feat_width = np.int64(image_width * spatial_scale)
                         # im_data = np.random.rand(1, num_classes*num_group*num_group, feat_height, feat_width)
                         rois_data = np.zeros([num_rois, 6])
                         rois_data[:, [1,3]] = np.sort(np.random.rand(num_rois, 2)*(image_width-1))

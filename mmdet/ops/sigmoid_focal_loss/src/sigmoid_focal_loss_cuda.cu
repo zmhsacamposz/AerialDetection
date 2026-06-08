@@ -8,8 +8,10 @@
 // cyfu@cs.unc.edu
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
+#include <ATen/cuda/CUDAContext.h>
 
-#include <THC/THC.h>
+#include <ATen/ATen.h>
+#include <ATen/cuda/CUDAContext.h>
 #include <THC/THCAtomics.cuh>
 #include <THC/THCDeviceUtils.cuh>
 
@@ -100,8 +102,8 @@ at::Tensor SigmoidFocalLoss_forward_cuda(const at::Tensor &logits,
                                          const at::Tensor &targets,
                                          const int num_classes,
                                          const float gamma, const float alpha) {
-  AT_ASSERTM(logits.type().is_cuda(), "logits must be a CUDA tensor");
-  AT_ASSERTM(targets.type().is_cuda(), "targets must be a CUDA tensor");
+  AT_ASSERTM(logits.is_cuda(), "logits must be a CUDA tensor");
+  AT_ASSERTM(targets.is_cuda(), "targets must be a CUDA tensor");
   AT_ASSERTM(logits.dim() == 2, "logits should be NxClass");
 
   const int num_samples = logits.size(0);
@@ -109,11 +111,11 @@ at::Tensor SigmoidFocalLoss_forward_cuda(const at::Tensor &logits,
   auto losses = at::empty({num_samples, logits.size(1)}, logits.options());
   auto losses_size = num_samples * logits.size(1);
 
-  dim3 grid(std::min(THCCeilDiv(losses_size, 512L), 4096L));
+  dim3 grid(std::min(((losses_size + 512L - 1) / 512L), 4096L));
   dim3 block(512);
 
   if (losses.numel() == 0) {
-    THCudaCheck(cudaGetLastError());
+    AT_CUDA_CHECK(cudaGetLastError());
     return losses;
   }
 
@@ -124,7 +126,7 @@ at::Tensor SigmoidFocalLoss_forward_cuda(const at::Tensor &logits,
             targets.contiguous().data<long>(), num_classes, gamma, alpha,
             num_samples, losses.data<scalar_t>());
       });
-  THCudaCheck(cudaGetLastError());
+  AT_CUDA_CHECK(cudaGetLastError());
   return losses;
 }
 
@@ -134,9 +136,9 @@ at::Tensor SigmoidFocalLoss_backward_cuda(const at::Tensor &logits,
                                           const int num_classes,
                                           const float gamma,
                                           const float alpha) {
-  AT_ASSERTM(logits.type().is_cuda(), "logits must be a CUDA tensor");
-  AT_ASSERTM(targets.type().is_cuda(), "targets must be a CUDA tensor");
-  AT_ASSERTM(d_losses.type().is_cuda(), "d_losses must be a CUDA tensor");
+  AT_ASSERTM(logits.is_cuda(), "logits must be a CUDA tensor");
+  AT_ASSERTM(targets.is_cuda(), "targets must be a CUDA tensor");
+  AT_ASSERTM(d_losses.is_cuda(), "d_losses must be a CUDA tensor");
 
   AT_ASSERTM(logits.dim() == 2, "logits should be NxClass");
 
@@ -147,11 +149,11 @@ at::Tensor SigmoidFocalLoss_backward_cuda(const at::Tensor &logits,
   auto d_logits = at::zeros({num_samples, num_classes}, logits.options());
   auto d_logits_size = num_samples * logits.size(1);
 
-  dim3 grid(std::min(THCCeilDiv(d_logits_size, 512L), 4096L));
+  dim3 grid(std::min(((d_logits_size + 512L - 1) / 512L), 4096L));
   dim3 block(512);
 
   if (d_logits.numel() == 0) {
-    THCudaCheck(cudaGetLastError());
+    AT_CUDA_CHECK(cudaGetLastError());
     return d_logits;
   }
 
@@ -164,6 +166,6 @@ at::Tensor SigmoidFocalLoss_backward_cuda(const at::Tensor &logits,
             num_samples, d_logits.data<scalar_t>());
       });
 
-  THCudaCheck(cudaGetLastError());
+  AT_CUDA_CHECK(cudaGetLastError());
   return d_logits;
 }
